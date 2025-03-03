@@ -13,7 +13,7 @@
     "url": "https://github.com/timheuer/jsondbg.git"
   },
   "icon": "resources/icon.png",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "engines": {
     "vscode": "^1.97.0"
   },
@@ -36,10 +36,6 @@
     "debugger",
     "variables"
   ],
-  "galleryBanner": {
-    "color": "#C80000",
-    "theme": "dark"
-  },
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
