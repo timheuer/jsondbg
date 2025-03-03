@@ -46,10 +46,18 @@ export function registerViewJsonCommand(context: vscode.ExtensionContext): void 
                 // Create and show the JSON viewer
                 createJsonViewer(jsonObj, context.extensionUri);
             } catch (error) {
-                vscode.window.showErrorMessage('Failed to parse JSON: ' + error.message);
+                let errorMessage = 'Failed to parse JSON';
+                if (error instanceof Error) {
+                    errorMessage += ': ' + error.message;
+                }
+                vscode.window.showErrorMessage(errorMessage);
             }
         } catch (error) {
-            vscode.window.showErrorMessage('Error processing variable: ' + error.message);
+            let errorMessage = 'Error processing variable';
+            if (error instanceof Error) {
+                errorMessage += ': ' + error.message;
+            }
+            vscode.window.showErrorMessage(errorMessage);
         }
     });
 

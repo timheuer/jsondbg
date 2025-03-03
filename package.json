@@ -1,7 +1,17 @@
 {
+  "author": {
+    "name": "Tim Heuer"
+  },
+  "publisher": "timheuer",
+  "license": "MIT",
+  "qna": "https://github.com/timheuer/jsondbg/issues",
   "name": "jsondbg",
   "displayName": "JSON Debug Visualizer",
   "description": "Debug variable visualizer for JSON",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/timheuer/jsondbg.git"
+  },
   "icon": "resources/icon.png",
   "version": "0.0.1",
   "engines": {
@@ -34,7 +44,8 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "deploy": "vsce publish"
   },
   "devDependencies": {
     "@types/vscode": "^1.97.0",
