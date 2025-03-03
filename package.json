@@ -2,6 +2,7 @@
   "name": "jsondbg",
   "displayName": "JSON Debug Visualizer",
   "description": "Debug variable visualizer for JSON",
+  "icon": "resources/icon.png",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.97.0"
