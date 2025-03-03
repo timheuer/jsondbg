@@ -4,7 +4,7 @@
   },
   "publisher": "timheuer",
   "license": "MIT",
-  "qna": "https://github.com/timheuer/jsondbg/issues",
+  "qna": "https://github.com/timheuer/jsondbg/issues/new",
   "name": "jsondbg",
   "displayName": "JSON Debug Visualizer",
   "description": "Debug variable visualizer for JSON",
@@ -13,13 +13,33 @@
     "url": "https://github.com/timheuer/jsondbg.git"
   },
   "icon": "resources/icon.png",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "engines": {
     "vscode": "^1.97.0"
   },
+  "browser": "./out/extension.js",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": true
+  },
   "categories": [
-    "Debuggers"
+    "Debuggers",
+    "Other",
+    "Visualization"
   ],
+  "keywords": [
+    "json",
+    "debug",
+    "visualizer",
+    "debugger",
+    "variables"
+  ],
+  "galleryBanner": {
+    "color": "#C80000",
+    "theme": "dark"
+  },
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {

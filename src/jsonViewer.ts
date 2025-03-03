@@ -72,7 +72,9 @@ function createJsonViewer(jsonObj: any, extensionUri: vscode.Uri): void {
         'JSON Viewer',
         vscode.ViewColumn.One,
         {
-            enableScripts: true
+            enableScripts: true,
+            localResourceRoots: [extensionUri],
+            retainContextWhenHidden: true
         }
     );
 
@@ -90,6 +92,7 @@ function getWebviewContent(jsonObj: any): string {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline';">
         <title>JSON Viewer</title>
         <style>
             body {
@@ -205,6 +208,11 @@ function getWebviewContent(jsonObj: any): string {
         </div>
         <div class="json-container" id="json-container"></div>
         <script>
+            // Fix for browser compatibility
+            if (typeof acquireVsCodeApi !== 'undefined') {
+                const vscode = acquireVsCodeApi();
+            }
+            
             // The JSON data
             const jsonObj = ${jsonString};
             
