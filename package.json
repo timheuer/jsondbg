@@ -13,7 +13,7 @@
     "url": "https://github.com/timheuer/jsondbg.git"
   },
   "icon": "resources/icon.png",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "engines": {
     "vscode": "^1.97.0"
   },
@@ -60,18 +60,22 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
-    "test": "vscode-test",
+    "test": "node ./out/test/runTest.js",
     "deploy": "vsce publish"
   },
   "devDependencies": {
     "@types/vscode": "^1.97.0",
-    "@types/mocha": "^10.0.10",
+    "@types/mocha": "^9.1.1",
     "@types/node": "20.x",
+    "@types/sinon": "^10.0.20",
+    "glob": "^10.3.10",
     "@typescript-eslint/eslint-plugin": "^8.25.0",
     "@typescript-eslint/parser": "^8.25.0",
     "eslint": "^9.21.0",
     "typescript": "^5.7.3",
     "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1"
+    "@vscode/test-electron": "^2.1.5",
+    "mocha": "^10.0.0",
+    "sinon": "^14.0.0"
   }
 }

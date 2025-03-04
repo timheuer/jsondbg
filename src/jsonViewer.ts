@@ -33,6 +33,14 @@ export function registerViewJsonCommand(context: vscode.ExtensionContext): void 
                 return;
             }
 
+            // Extract the variable name for error reporting
+            let variableName = 'Unknown';
+            if (variable && variable.name) {
+                variableName = variable.name;
+            } else if (variable && variable.variable && variable.variable.name) {
+                variableName = variable.variable.name;
+            }
+
             // If the value is enclosed in quotes (string representation), remove them
             if (jsonValue.startsWith('"') && jsonValue.endsWith('"')) {
                 jsonValue = jsonValue.substring(1, jsonValue.length - 1);
@@ -46,9 +54,9 @@ export function registerViewJsonCommand(context: vscode.ExtensionContext): void 
                 // Create and show the JSON viewer
                 createJsonViewer(jsonObj, context.extensionUri);
             } catch (error) {
-                let errorMessage = 'Failed to parse JSON';
+                let errorMessage = `"${variableName}" does not appear to be valid JSON`;
                 if (error instanceof Error) {
-                    errorMessage += ': ' + error.message;
+                    errorMessage += `: ${error.message}`;
                 }
                 vscode.window.showErrorMessage(errorMessage);
             }

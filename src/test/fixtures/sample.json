@@ -1,0 +1,24 @@
+{
+    "name": "Sample JSON",
+    "version": "1.0.0",
+    "description": "A sample JSON file for testing",
+    "active": true,
+    "count": 42,
+    "items": [
+        {
+            "id": 1,
+            "name": "Item One",
+            "value": 100
+        },
+        {
+            "id": 2,
+            "name": "Item Two",
+            "value": 200
+        }
+    ],
+    "settings": {
+        "debug": true,
+        "timeout": 3000,
+        "retryCount": 3
+    }
+}
