@@ -48,6 +48,9 @@ export function registerViewJsonCommand(context: vscode.ExtensionContext): void 
                 jsonValue = jsonValue.replace(/\\"/g, '"');
             }
 
+            // Clean up line endings - handle both \r\n and \n
+            jsonValue = jsonValue.replace(/\\r\\n|\\n|\\r/g, ' ').trim();
+
             try {
                 // Try to parse the JSON string
                 const jsonObj = JSON.parse(jsonValue);
@@ -255,7 +258,7 @@ function getWebviewContent(jsonObj: any): string {
                 
                 // Create the property div that will hold everything
                 const propertyDiv = document.createElement('div');
-                propertyDiv.className = 'property';
+                propertyDiv.className = 'property-root';
                 
                 // Create the row that holds the toggle and brackets
                 const rowDiv = document.createElement('div');
