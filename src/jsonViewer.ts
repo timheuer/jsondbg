@@ -84,17 +84,31 @@ function createJsonViewer(jsonObj: any, extensionUri: vscode.Uri): void {
         vscode.ViewColumn.One,
         {
             enableScripts: true,
-            localResourceRoots: [extensionUri],
+            localResourceRoots: [extensionUri, vscode.Uri.joinPath(extensionUri, 'node_modules')],
             retainContextWhenHidden: true
         }
     );
 
+    // Get URIs for local resources
+    const jsonEditorJsUri = webviewUri(panel.webview, extensionUri, ['node_modules', 'jsoneditor', 'dist', 'jsoneditor.min.js']);
+    const jsonEditorCssUri = webviewUri(panel.webview, extensionUri, ['node_modules', 'jsoneditor', 'dist', 'jsoneditor.min.css']);
+
     // Set the HTML content
-    panel.webview.html = getWebviewContent(jsonObj);
+    panel.webview.html = getWebviewContent(jsonObj, panel.webview, jsonEditorJsUri, jsonEditorCssUri);
+}
+
+// Helper function to get webview URI for local resources
+function webviewUri(webview: vscode.Webview, extensionUri: vscode.Uri, pathList: string[]): vscode.Uri {
+    return webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...pathList));
 }
 
 // Generate the HTML content for the webview
-function getWebviewContent(jsonObj: any): string {
+function getWebviewContent(
+    jsonObj: any, 
+    webview: vscode.Webview, 
+    jsonEditorUri: vscode.Uri,
+    jsonEditorCssUri: vscode.Uri
+): string {
     // Stringify the JSON with pretty formatting
     const jsonString = JSON.stringify(jsonObj, null, 2);
 
@@ -103,121 +117,98 @@ function getWebviewContent(jsonObj: any): string {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline';">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; font-src ${webview.cspSource}; img-src ${webview.cspSource} https:; style-src ${webview.cspSource} 'unsafe-inline'; script-src ${webview.cspSource} 'unsafe-inline';">
         <title>JSON Viewer</title>
+        <link href="${jsonEditorCssUri}" rel="stylesheet" type="text/css">
+        <script src="${jsonEditorUri}"></script>
         <style>
+            :root {
+                --jsoneditor-theme-background: var(--vscode-editor-background);
+                --jsoneditor-theme-text: var(--vscode-editor-foreground);
+            }
             body {
                 font-family: var(--vscode-font-family);
                 color: var(--vscode-foreground);
                 background-color: var(--vscode-editor-background);
                 padding: 10px;
-                line-height: 1.5;
+                margin: 0;
+                height: 100vh;
+                overflow: hidden;
             }
-            .toolbar {
-                margin-bottom: 10px;
-            }
-            .toolbar button {
-                background-color: var(--vscode-button-background);
-                color: var(--vscode-button-foreground);
-                border: none;
-                padding: 4px 12px;
-                margin-right: 8px;
-                border-radius: 2px;
-                cursor: pointer;
-                font-size: 12px;
-            }
-            .toolbar button:hover {
-                background-color: var(--vscode-button-hoverBackground);
-            }
-            .json-container {
-                font-family: var(--vscode-editor-font-family, 'monospace');
-                font-size: 14px;
-                background-color: var(--vscode-editor-background);
-                padding: 10px;
-                border-radius: 5px;
-                overflow: auto;
-            }
-            .toggle {
-                display: inline-block;
-                width: 12px;
-                height: 12px;
-                text-align: center;
-                line-height: 12px;
-                cursor: pointer;
-                margin-right: 4px;
-                font-weight: bold;
-                background-color: var(--vscode-badge-background);
-                color: var(--vscode-badge-foreground);
-                border-radius: 3px;
-                user-select: none;
-            }
-            .toggle:hover {
-                background-color: var(--vscode-button-hoverBackground);
-            }
-            .toggle.collapsed::before {
-                content: "+";
-            }
-            .toggle.expanded::before {
-                content: "-";
-            }
-            .hidden {
-                display: none;
-            }
-            .indent {
-                padding-left: 20px;
-                border-left: 1px dotted var(--vscode-editorIndentGuide-background);
-                margin-left: 4px;
-            }
-            .property {
-                display: flex;
-                flex-wrap: wrap;
-                position: relative;
-            }
-            .property:hover {
-                background-color: var(--vscode-list-hoverBackground);
-            }
-            .property-row {
-                display: flex;
-                flex-direction: row;
-                align-items: flex-start;
+            #jsoneditor {
+                height: calc(100vh - 20px);
                 width: 100%;
             }
-            .key {
-                color: var(--vscode-symbolIcon-propertyForeground, #7F0055);
-                font-weight: bold;
+            .jsoneditor {
+                border: 1px solid var(--vscode-focusBorder) !important;
             }
-            .string {
-                color: var(--vscode-symbolIcon-stringForeground, #2A00FF);
+            /* Main menu styling */
+            .jsoneditor-menu {
+                background-color: var(--vscode-editorWidget-background) !important;
+                border-bottom: 1px solid var(--vscode-focusBorder) !important;
             }
-            .number {
-                color: var(--vscode-symbolIcon-numberForeground, #09885A);
+            /* All buttons in the toolbar */
+            .jsoneditor-menu button,
+            .jsoneditor-modes button,
+            .jsoneditor-type-modes button {
+                background-color: var(--vscode-button-background) !important;
+                border: none !important;
+                color: var(--vscode-button-foreground) !important;
+                padding: 4px 8px !important;
+                margin: 2px !important;
+                border-radius: 2px !important;
             }
-            .boolean {
-                color: var(--vscode-symbolIcon-booleanForeground, #0000FF);
+            /* Button hover states */
+            .jsoneditor-menu button:hover,
+            .jsoneditor-modes button:hover,
+            .jsoneditor-type-modes button:hover {
+                background-color: var(--vscode-button-hoverBackground) !important;
+                cursor: pointer !important;
             }
-            .null {
-                color: var (--vscode-symbolIcon-nullForeground, #808080);
-                font-style: italic;
+            /* Navigation bar */
+            .jsoneditor-navigation-bar {
+                background: var(--vscode-editorWidget-background) !important;
+                color: var(--vscode-foreground) !important;
+                border: none !important;
             }
-            .bracket {
-                color: var(--vscode-foreground);
-                font-weight: bold;
+            /* Context menu */
+            .jsoneditor-contextmenu {
+                background-color: var(--vscode-menu-background) !important;
+                border: 1px solid var(--vscode-menu-border) !important;
+                box-shadow: var(--vscode-widget-shadow) !important;
             }
-            .colon {
-                margin: 0 4px;
+            .jsoneditor-contextmenu button,
+            .jsoneditor-contextmenu-root button {
+                background-color: transparent !important;
+                color: var(--vscode-menu-foreground) !important;
+                border: none !important;
+                padding: 4px 8px !important;
             }
-            .comma {
-                margin-right: 4px;
+            .jsoneditor-contextmenu button:hover,
+            .jsoneditor-contextmenu-root button:hover {
+                background-color: var(--vscode-menu-selectionBackground) !important;
+                color: var(--vscode-menu-selectionForeground) !important;
+            }
+            /* Search box */
+            .jsoneditor-search {
+                background: var(--vscode-editorWidget-background) !important;
+                color: var(--vscode-input-foreground) !important;
+                border: 1px solid var(--vscode-input-border) !important;
+            }
+            .jsoneditor-search input {
+                background-color: var(--vscode-input-background) !important;
+                color: var(--vscode-input-foreground) !important;
+                border: 1px solid var(--vscode-input-border) !important;
+            }
+            /* Mode selector text */
+            .jsoneditor-modes,
+            .jsoneditor-type-modes {
+                color: var(--vscode-foreground) !important;
             }
         </style>
     </head>
     <body>
-        <h1>JSON Viewer</h1>
-        <div class="toolbar">
-            <button id="expand-all">Expand All</button>
-            <button id="collapse-all">Collapse All</button>
-        </div>
-        <div class="json-container" id="json-container"></div>
+        <div id="jsoneditor"></div>
         <script>
             // Fix for browser compatibility
             if (typeof acquireVsCodeApi !== 'undefined') {
@@ -227,176 +218,18 @@ function getWebviewContent(jsonObj: any): string {
             // The JSON data
             const jsonObj = ${jsonString};
             
-            // Function to create the tree view
-            function createTreeView(obj, container, isRoot = true) {
-                if (typeof obj !== 'object' || obj === null) {
-                    // Handle primitive values
-                    const valueEl = document.createElement('span');
-                    
-                    if (typeof obj === 'string') {
-                        valueEl.className = 'string';
-                        valueEl.textContent = '"' + obj.replace(/"/g, '\\"') + '"';
-                    } else if (typeof obj === 'number') {
-                        valueEl.className = 'number';
-                        valueEl.textContent = obj;
-                    } else if (typeof obj === 'boolean') {
-                        valueEl.className = 'boolean';
-                        valueEl.textContent = obj;
-                    } else if (obj === null) {
-                        valueEl.className = 'null';
-                        valueEl.textContent = 'null';
-                    }
-                    
-                    container.appendChild(valueEl);
-                    return;
-                }
-                
-                // Handle objects and arrays
-                const isArray = Array.isArray(obj);
-                const keys = Object.keys(obj);
-                const isEmpty = keys.length === 0;
-                
-                // Create the property div that will hold everything
-                const propertyDiv = document.createElement('div');
-                propertyDiv.className = 'property-root';
-                
-                // Create the row that holds the toggle and brackets
-                const rowDiv = document.createElement('div');
-                rowDiv.className = 'property-row';
-                
-                // Only add toggle button if the object has properties
-                if (!isEmpty) {
-                    const toggle = document.createElement('span');
-                    toggle.className = 'toggle expanded';
-                    toggle.addEventListener('click', function() {
-                        const content = this.parentNode.nextElementSibling;
-                        if (content) {
-                            content.classList.toggle('hidden');
-                            this.classList.toggle('expanded');
-                            this.classList.toggle('collapsed');
-                        }
-                    });
-                    rowDiv.appendChild(toggle);
-                }
-                
-                // Add opening bracket
-                const openBracket = document.createElement('span');
-                openBracket.className = 'bracket';
-                openBracket.textContent = isArray ? '[' : '{';
-                rowDiv.appendChild(openBracket);
-                
-                // If empty, add closing bracket in the same line
-                if (isEmpty) {
-                    const closeBracket = document.createElement('span');
-                    closeBracket.className = 'bracket';
-                    closeBracket.textContent = isArray ? ']' : '}';
-                    rowDiv.appendChild(closeBracket);
-                }
-                
-                propertyDiv.appendChild(rowDiv);
-                
-                // Create content container for child properties
-                if (!isEmpty) {
-                    const contentDiv = document.createElement('div');
-                    contentDiv.className = 'indent';
-                    
-                    // Add all properties
-                    keys.forEach((key, index) => {
-                        const propertyItemDiv = document.createElement('div');
-                        propertyItemDiv.className = 'property';
-                        
-                        const propertyRowDiv = document.createElement('div');
-                        propertyRowDiv.className = 'property-row';
-                        
-                        // Only show keys for objects, not arrays
-                        if (!isArray) {
-                            const keySpan = document.createElement('span');
-                            keySpan.className = 'key';
-                            keySpan.textContent = '"' + key + '"';
-                            propertyRowDiv.appendChild(keySpan);
-                            
-                            const colonSpan = document.createElement('span');
-                            colonSpan.className = 'colon';
-                            colonSpan.textContent = ':';
-                            propertyRowDiv.appendChild(colonSpan);
-                        }
-                        
-                        // Add the value
-                        const valueContainer = document.createElement('span');
-                        propertyRowDiv.appendChild(valueContainer);
-                        
-                        // Add the value recursively
-                        createTreeView(obj[key], valueContainer, false);
-                        
-                        // Add comma if not the last item
-                        if (index < keys.length - 1) {
-                            const commaSpan = document.createElement('span');
-                            commaSpan.className = 'comma';
-                            commaSpan.textContent = ',';
-                            propertyRowDiv.appendChild(commaSpan);
-                        }
-                        
-                        propertyItemDiv.appendChild(propertyRowDiv);
-                        contentDiv.appendChild(propertyItemDiv);
-                    });
-                    
-                    // Add the close bracket
-                    const closingDiv = document.createElement('div');
-                    const closeBracket = document.createElement('span');
-                    closeBracket.className = 'bracket';
-                    closeBracket.textContent = isArray ? ']' : '}';
-                    closingDiv.appendChild(closeBracket);
-                    contentDiv.appendChild(closingDiv);
-                    
-                    propertyDiv.appendChild(contentDiv);
-                }
-                
-                container.appendChild(propertyDiv);
-            }
-            
-            // Initialize the tree view
-            const container = document.getElementById('json-container');
-            createTreeView(jsonObj, container);
-            
-            // Expand/collapse all functionality
-            document.getElementById('expand-all').addEventListener('click', function() {
-                const allToggles = document.querySelectorAll('.toggle');
-                const allContents = document.querySelectorAll('.indent');
-                
-                allToggles.forEach(toggle => {
-                    toggle.classList.remove('collapsed');
-                    toggle.classList.add('expanded');
-                });
-                
-                allContents.forEach(content => {
-                    content.classList.remove('hidden');
-                });
-            });
-            
-            document.getElementById('collapse-all').addEventListener('click', function() {
-                const allToggles = document.querySelectorAll('.toggle');
-                const allContents = document.querySelectorAll('.indent');
-                
-                allToggles.forEach(toggle => {
-                    toggle.classList.remove('expanded');
-                    toggle.classList.add('collapsed');
-                });
-                
-                allContents.forEach(content => {
-                    content.classList.add('hidden');
-                });
-            });
-            
-            // Add keyboard navigation
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    const activeElement = document.activeElement;
-                    if (activeElement && activeElement.classList.contains('toggle')) {
-                        activeElement.click();
-                        e.preventDefault();
-                    }
-                }
-            });
+            // Create the editor
+            const container = document.getElementById('jsoneditor');
+            const options = {
+                mode: 'view',
+                modes: ['view', 'form', 'code', 'tree', 'text'],
+                navigationBar: true,
+                statusBar: false,
+                mainMenuBar: true,
+                enableSort: false,
+                enableTransform: false,
+            };
+            const editor = new JSONEditor(container, options, jsonObj);
         </script>
     </body>
     </html>`;
