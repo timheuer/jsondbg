@@ -6,4 +6,7 @@ Debug variable visualizers are not built-in to VS Code. Interested? Please upvot
 
 It will display a webview with rendered view of the JSON string as a structured view:
 
-![example](https://github.com/user-attachments/assets/6e423451-711a-4c12-9bb2-785e71c5d01d)
+![Example JSON Rendering](https://github.com/user-attachments/assets/e244c48e-2d84-4a8a-8bde-9f3195dab80e)
+
+## Credits
+JSON rendering provided by [jsoneditor](https://www.npmjs.com/package/jsoneditor)
