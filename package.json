@@ -13,7 +13,7 @@
     "url": "https://github.com/timheuer/jsondbg.git"
   },
   "icon": "resources/icon.png",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "engines": {
     "vscode": "^1.97.0"
   },
