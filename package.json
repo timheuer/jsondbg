@@ -76,7 +76,7 @@
     "glob": "^10.3.10",
     "mocha": "^10.0.0",
     "sinon": "^14.0.0",
-    "typescript": "^5.0.4"
+    "typescript": "^5.7.3"
   },
   "dependencies": {
     "jsoneditor": "^10.2.0"
