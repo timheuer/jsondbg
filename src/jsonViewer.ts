@@ -14,6 +14,14 @@ function isLikelyJson(str: string): { isLikely: boolean, reason?: string } {
     if (!str) {
         return { isLikely: false, reason: 'Empty string is not valid JSON' };
     }
+
+    // Strip quotation
+    if ((str.startsWith('"') && str.endsWith('"')) || str.startsWith("'") && str.endsWith("'")) {
+        str = str.slice(1, -1);
+    }
+    
+    // Trim
+    str = str.trim();
     
     // Check if the string starts with either { or [ which are valid JSON starters
     if (!(str.startsWith('{') || str.startsWith('['))) {
@@ -85,7 +93,7 @@ function isLikelyJson(str: string): { isLikely: boolean, reason?: string } {
  */
 function preprocessJsonString(jsonValue: string): string {
     // If the value is enclosed in quotes (string representation), remove them
-    if (jsonValue.startsWith('"') && jsonValue.endsWith('"')) {
+    if ((jsonValue.startsWith('"') && jsonValue.endsWith('"')) || (jsonValue.startsWith("'") && jsonValue.endsWith("'"))) {
         jsonValue = jsonValue.substring(1, jsonValue.length - 1);
         // Unescape any escaped quotes
         jsonValue = jsonValue.replace(/\\"/g, '"');
